@@ -51,7 +51,9 @@ For EACH of the 16 operations:
 2. If P holds universally, check if C holds for all assignments in $\{0,1\}^m$ where $m = |V(C)|$
 3. If C fails: **VERDICT = FALSE**, output the operation and failing assignment
 
-**This is a COMPLETE decision procedure for 2-element algebras.** If no counterexample exists among all 16 operations, the implication MIGHT be true (but 2-element test is not always sufficient — it IS sufficient for equations with ≤3 variables in most practical cases).
+**This is a COMPLETE decision procedure for 2-element algebras.** If no counterexample exists among all 16 operations, the implication MIGHT be true — but **2-element test is NOT always sufficient.** Some FALSE problems require size-5 magmas for a counterexample (no witness exists on sizes 2, 3, or 4). If $\mathbb{F}_2$ finds no counterexample, escalate to size-3 and beyond, or attempt a derivation.
+
+**WARNING — VERIFIED FINDING:** Problems where $V(C) \supsetneq V(P)$ and the premise is "loose" (many models on small sizes) may still pass the $\mathbb{F}_2$ test but be FALSE. The new free variable only creates a counterexample when the algebra is large enough to have non-trivial structure.
 
 ---
 
@@ -101,9 +103,22 @@ Consider $f(0,0)=0, f(0,1)=0, f(1,0)=0, f(1,1)=1$ (this is AND).
 - P: $x*(y*z) = (y*w)*w$. Check all 16 assignments of $(x,y,z,w) \in \{0,1\}^4$.
 - Find assignment where P holds universally but C fails for some $(x,y,z,w,u)$.
 
-The key insight: when P forces the algebra to be non-trivial, the free variable $u$ in C creates room for a counterexample.
+**KEY FINDING:** No counterexample exists on $|A| \leq 4$. The minimum counterexample requires $|A| = 5$:
 
-**VERDICT: FALSE**
+```
+A = {0,1,2,3,4}, operation table:
+  f(0,*) = [0, 0, 0, 0, 0]
+  f(1,*) = [0, 0, 0, 0, 0]
+  f(2,*) = [0, 0, 0, 0, 0]
+  f(3,*) = [0, 0, 0, 0, 1]
+  f(4,*) = [0, 0, 3, 0, 0]
+
+P holds universally. C fails at x=0, y=0, z=4, w=2, u=4:
+  LHS: f(0, f(0,0)) = f(0,0) = 0
+  RHS: f(f(4,2), 4) = f(3,4) = 1  ≠ 0
+```
+
+**VERDICT: FALSE** — but the $\mathbb{F}_2$ test alone would NOT catch this.
 
 ---
 
@@ -124,7 +139,23 @@ The key insight: when P forces the algebra to be non-trivial, the free variable 
 - If P holds for all $(x,y)$, check C: $x = f(f(y, f(z,y)), f(y,x))$ for all $(x,y,z)$.
 - The free $z$ can be set to break C.
 
-**VERDICT: FALSE** — The free variable $z$ allows a counterexample.
+**VERIFIED COUNTEREXAMPLE** (size 5, Latin-square-like structure):
+
+```
+A = {0,1,2,3,4}, operation table:
+  f(0,*) = [0, 2, 3, 4, 1]
+  f(1,*) = [3, 1, 4, 2, 0]
+  f(2,*) = [4, 0, 2, 1, 3]
+  f(3,*) = [1, 4, 0, 3, 2]
+  f(4,*) = [2, 3, 1, 0, 4]
+
+P holds universally. C fails at x=0, y=0, z=1:
+  RHS: f(f(0, f(1,0)), f(0,0)) = f(f(0,3), 0) = f(4, 0) = 2 ≠ 0
+```
+
+Note: On sizes 2–4, all models of P have rows that are involutions ($\sigma^2 = \text{id}$), which forces C to hold. Size 5 breaks this pattern.
+
+**VERDICT: FALSE** — requires size-5 algebra; $\mathbb{F}_2$ test is insufficient.
 
 ---
 
@@ -132,16 +163,9 @@ The key insight: when P forces the algebra to be non-trivial, the free variable 
 
 **Phase 1:** $V(P) = \{x,y,z\}$, $V(C) = \{x,y,z\}$. Same variables. Good sign.
 
-**Phase 3–4:** No counterexample found in $\mathbb{F}_2$.
+**VERIFIED:** P forces $*$ to be a constant operation ($f(a,b) = c$ for all $a,b$). Since $z$ is free in P but absent from LHS, P forces $x*(z*x)$ to be independent of $z$. This constrains $*$ so heavily that only constant operations survive (verified exhaustively on sizes 2, 3, 4). Under a constant operation, every equation holds.
 
-**Phase 5 — Derivation sketch:**
-From P: $x*y = y*(x*(z*x))$ for all $x,y,z$.
-
-Substitution instances of P give us tools. The key idea: P says the LHS $x*y$ equals a specific rearrangement on the RHS. By applying P to subterms of itself (substituting into P), we can transform $y*(x*(z*x))$ into $(y*(z*x))*y$.
-
-Apply P with appropriate substitutions to show both sides of C equal the same intermediate expression.
-
-**VERDICT: TRUE**
+**VERDICT: TRUE** — P forces triviality (constant algebra).
 
 ---
 
@@ -157,9 +181,9 @@ Apply P with appropriate substitutions to show both sides of C equal the same in
 
 **Phase 4 — Full $\mathbb{F}_2$ search:** No 2-element magma satisfies P universally (except trivial). In the trivial 1-element magma, C holds vacuously.
 
-**Argument:** P forces $|A| = 1$ (all elements equal). In a 1-element magma, every equation holds.
+**VERIFIED:** Exhaustive search confirms 0 models of P on sizes 2, 3, and 4. Only the trivial 1-element magma satisfies P. Reason: P requires $f(t, z) = x$ for ALL $z$ (where $t = f(f(f(y,y),x),x)$), meaning each element has a "constant row" pointing back to it. For $|A| \geq 2$, this creates contradictions.
 
-**VERDICT: TRUE** — P forces triviality, so C holds vacuously.
+**VERDICT: TRUE** — P forces $|A| = 1$, so C holds vacuously.
 
 ---
 
